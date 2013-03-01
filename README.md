@@ -21,7 +21,7 @@ In your emacs config:
 
 ## Usage
 
-;; Run with `M-x inf-mongo'
+Run with `M-x inf-mongo`.
 
 ## License
 
