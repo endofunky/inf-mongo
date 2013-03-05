@@ -42,6 +42,8 @@
 
 ;; Run with `M-x inf-mongo'
 
+;;; Code:
+
 (require 'js)
 (require 'comint)
 
@@ -162,3 +164,4 @@ With argument, position cursor at end of buffer."
   (use-local-map inf-mongo-mode-map))
 
 (provide 'inf-mongo)
+;;; inf-mongo.el ends here
