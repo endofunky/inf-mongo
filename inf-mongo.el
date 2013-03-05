@@ -35,7 +35,7 @@
 
 ;; In your emacs config:
 
-;; (add-to-list 'load-path "~/.emacs.d/vendor/inf-mongo/inf-mongo.el")
+;; (add-to-list 'load-path "~/.emacs.d/vendor/inf-mongo")
 ;; (require 'inf-mongo)
 
 ;; Usage
