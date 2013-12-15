@@ -166,13 +166,13 @@ With argument, position cursor at end of buffer."
 (defvar inf-mongo--shell-output-filter-in-progress nil)
 
 (defun inf-mongo--shell-output-filter (string)
-  "This function which is used by `mongo-get-result-from-inf'.
-It watches the inferior process untill it returns a new prompt,
-marking the end of execution of code sent by
+  "This function is used by `inf-mongo-get-result-from-inf'.
+It watches the inferior process until, the process returns a new prompt,
+thus marking the end of execution of code sent by
 `inf-mongo-get-result-from-inf'.  It stores all the output from the
 process in `inf-mongo--shell-output-buffer'.  It signals the function
 `inf-mongo-get-result-from-inf' that the output is ready by setting
-`inf-' to nil"
+`inf-mongo--shell-output-filter-in-progress' to nil"
   (setq string (ansi-color-filter-apply string)
 	inf-mongo--shell-output-buffer (concat inf-mongo--shell-output-buffer string))
   (let ((prompt-match-index (string-match inf-mongo-prompt inf-mongo--shell-output-buffer)))
