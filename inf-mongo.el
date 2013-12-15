@@ -85,6 +85,7 @@ inf-mongo-mode-hook (in that order)."
         (inf-mongo-mode))))
   (setq inf-mongo-command cmd)
   (setq inf-mongo-buffer "*mongo*")
+  (inf-mongo-setup-autocompletion)
   (if (not dont-switch-p)
       (pop-to-buffer "*mongo*")))
 
@@ -144,6 +145,87 @@ With argument, position cursor at end of buffer."
 
 (defvar inf-mongo-buffer)
 
+(defvar inf-mongo-auto-completion-setup-code
+  "function INFMONGO__getCompletions(prefix) {
+      shellAutocomplete(prefix);
+      return(__autocomplete__.join(\";\"));
+  }"
+  "Code executed in inferior mongo to setup autocompletion.")
+
+(defun inf-mongo-setup-autocompletion ()
+  "Function executed to setup autocompletion in inf-mongo."
+  (comint-send-string (get-buffer-process inf-mongo-buffer) inf-mongo-auto-completion-setup-code)
+  (comint-send-string (get-buffer-process inf-mongo-buffer) "\n")
+  (define-key inf-mongo-mode-map "\t" 'complete-symbol))
+
+(defvar inf-mongo-prompt "\n> " 
+  "String used to match inf-mongo prompt.")
+
+(defvar inf-mongo--shell-output-buffer "")
+
+(defvar inf-mongo--shell-output-filter-in-progress nil)
+
+(defun inf-mongo--shell-output-filter (string)
+  "This function which is used by `mongo-get-result-from-inf'.
+It watches the inferior process untill it returns a new prompt,
+marking the end of execution of code sent by
+`inf-mongo-get-result-from-inf'.  It stores all the output from the
+process in `inf-mongo--shell-output-buffer'.  It signals the function
+`inf-mongo-get-result-from-inf' that the output is ready by setting
+`inf-' to nil"
+  (setq string (ansi-color-filter-apply string)
+	inf-mongo--shell-output-buffer (concat inf-mongo--shell-output-buffer string))
+  (let ((prompt-match-index (string-match inf-mongo-prompt inf-mongo--shell-output-buffer)))
+    (when prompt-match-index
+      (setq inf-mongo--shell-output-buffer
+	    (substring inf-mongo--shell-output-buffer
+		       0 prompt-match-index))
+      (setq inf-mongo--shell-output-filter-in-progress nil)))
+  "")
+
+(defun inf-mongo-get-result-from-inf (code)
+  "Helper function to execute the given CODE in inferior mongo and return the result."
+  (let ((inf-mongo--shell-output-buffer nil)
+        (inf-mongo--shell-output-filter-in-progress t)
+        (comint-preoutput-filter-functions '(inf-mongo--shell-output-filter))
+        (process (get-buffer-process inf-mongo-buffer)))
+    (with-local-quit
+      (comint-send-string process code)
+      (comint-send-string process "\n")
+      (while inf-mongo--shell-output-filter-in-progress
+        (accept-process-output process))
+      (prog1
+          inf-mongo--shell-output-buffer
+        (setq inf-mongo--shell-output-buffer nil)))))
+
+(defun inf-mongo-shell-completion-complete-at-point ()
+  "Perform completion at point in inferior-mongo.
+Most of this is borrowed from python.el"
+  (let* ((start
+          (save-excursion
+            (with-syntax-table js-mode-syntax-table
+              (let* ((syntax-list (append (string-to-syntax ".")
+					  (string-to-syntax "_")
+					  (string-to-syntax "w"))))
+                (while (member
+                        (car (syntax-after (1- (point)))) syntax-list)
+                  (skip-syntax-backward ".w_")
+                  (when (or (equal (char-before) ?\))
+                            (equal (char-before) ?\"))
+                    (forward-char -1)))
+                (point)))))
+         (end (point)))
+    (list start end
+          (completion-table-dynamic
+           (apply-partially
+            #'inf-mongo-get-completions-at-point)))))
+
+(defun inf-mongo-get-completions-at-point (prefix)
+  "Get completions for PREFIX using inf-mongo."
+  (if (equal prefix "") 
+      nil
+    (split-string (inf-mongo-get-result-from-inf (concat "INFMONGO__getCompletions('" prefix "');")) ";")))
+
 ;;;###autoload
 (defvar inf-mongo-mode-map
   (let ((map (make-sparse-keymap)))
@@ -160,6 +242,9 @@ With argument, position cursor at end of buffer."
 
   (add-hook 'before-change-functions #'js--flush-caches t t)
   (js--update-quick-match-re)
+
+  (add-to-list (make-local-variable 'comint-dynamic-complete-functions)
+               'inf-mongo-shell-completion-complete-at-point)
 
   (use-local-map inf-mongo-mode-map))
 
