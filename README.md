@@ -12,7 +12,7 @@ All of inf-mongo's dependencies ship with GNU Emacs:
 ## Install
 
     $ cd ~/.emacs.d/vendor
-    $ git clone git://github.com/tobiassvn/inf-mongo.git
+    $ git clone git://github.com/endofunky/inf-mongo.git
 
 In your emacs config:
 

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013 Tobias Svensson
 
 ;; Author: Tobias Svensson
-;; URL: http://github.com/tobiassvn/inf-mongo
+;; URL: http://github.com/endofunky/inf-mongo
 ;; Created: 1 March 2013
 ;; Keywords: databases mongodb
 ;; Version: 1.0.0
@@ -31,7 +31,7 @@
 ;; Install
 
 ;; $ cd ~/.emacs.d/vendor
-;; $ git clone git://github.com/tobiassvn/inf-mongo.git
+;; $ git clone git://github.com/endofunky/inf-mongo.git
 
 ;; In your emacs config:
 
