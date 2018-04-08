@@ -158,7 +158,7 @@ With argument, position cursor at end of buffer."
   (comint-send-string (get-buffer-process inf-mongo-buffer) "\n")
   (define-key inf-mongo-mode-map "\t" 'complete-symbol))
 
-(defvar inf-mongo-prompt "\n> " 
+(defvar inf-mongo-prompt "\n> \\|\n.+> "
   "String used to match inf-mongo prompt.")
 
 (defvar inf-mongo--shell-output-buffer "")
