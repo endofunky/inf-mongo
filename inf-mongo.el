@@ -229,7 +229,9 @@ Most of this is borrowed from python.el"
 ;;;###autoload
 (defvar inf-mongo-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-x\C-e" 'mongo-send-last-sexp)
+    (define-key map (kbd "C-x C-e")  'mongo-send-last-sexp)
+    (define-key map (kbd "<M-up>")   'comint-previous-input)
+    (define-key map (kbd "<M-down>") 'comint-next-input)
     map))
 
 ;;;###autoload
